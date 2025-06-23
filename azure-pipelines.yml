@@ -7,7 +7,7 @@ trigger:
 - main
 
 pool:
-  vmImage: ubuntu-latest
+  name: mac
 
 steps:
 - script: echo Hello, world!

@@ -12,6 +12,12 @@ steps:
 - script: docker info
   displayName: 'Docker info'
 
+- script: docker system df
+  displayName: 'Disk usage'
+
+- script: docker images --format "{{.Repository}}:{{.Tag}} {{.Size}}" | sort -k2 -h
+  displayName: 'Sort by size'
+
 - script: |
     docker build -t $(dockerImageName):$(dockerImageTag) .
   displayName: 'Docker Build'

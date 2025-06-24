@@ -7,20 +7,31 @@ pool:
 variables:
   dockerImageName: myapp
   dockerImageTag: latest
+  fullImageName: $(dockerImageName):$(dockerImageTag)
 
-steps:
-- script: docker info
-  displayName: 'Docker info'
+jobs:
+- job: DockerDiagnostics
+  displayName: "Docker Diagnostics"
 
-- script: docker system df
-  displayName: 'Disk usage'
+  steps:
+  - script: docker info
+    displayName: 'Docker info'
 
-- script: docker images --format "{{.Repository}}:{{.Tag}} {{.Size}}" | sort -k2 -h
-  displayName: 'Sort by size'
+  - script: docker system df
+    displayName: 'Disk usage'
 
-- script: |
-    docker build -t $(dockerImageName):$(dockerImageTag) .
-  displayName: 'Docker Build'
+  - script: docker images --format "{{.Repository}}:{{.Tag}} {{.Size}}" | sort -k2 -h
+    displayName: 'Sort by size'
+
+- job: BuildImage
+  displayName: "🏗️ Build Docker Image"
+  dependsOn: DockerDiagnostics
+  steps:
+  - script: docker build -t $(fullImageName) .
+    displayName: 'Build Image'
+  # - script: |
+  #     docker build -t $(dockerImageName):$(dockerImageTag) .
+  #   displayName: 'Docker Build'
 
 # - script: |
 #     echo "$(dockerPassword)" | docker login -u "$(dockerUsername)" --password-stdin

@@ -9,8 +9,8 @@ variables:
   dockerImageTag: latest
 
 steps:
-- script: echo "Start Docker build"
-  displayName: 'Start Build Log'
+- script: docker info
+  displayName: 'Docker info'
 
 - script: |
     docker build -t $(dockerImageName):$(dockerImageTag) .

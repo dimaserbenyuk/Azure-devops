@@ -4,7 +4,20 @@ trigger:
 pool:
   name: mac
 
+variables:
+  dockerImageName: myapp
+  dockerImageTag: latest
 
 steps:
-- script: echo Hello, world!!!!!!
-  displayName: 'Run a one-line script'
+- script: echo "Start Docker build"
+  displayName: 'Start Build Log'
+
+- script: |
+    docker build -t $(dockerImageName):$(dockerImageTag) .
+  displayName: 'Docker Build'
+
+# - script: |
+#     echo "$(dockerPassword)" | docker login -u "$(dockerUsername)" --password-stdin
+#     docker push $(dockerImageName):$(dockerImageTag)
+#   displayName: 'Docker Push'
+#   condition: and(succeeded(), eq(variables['dockerPush'], 'true'))

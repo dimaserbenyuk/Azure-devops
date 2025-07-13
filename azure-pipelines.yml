@@ -20,12 +20,12 @@ parameters:
 steps:
   - checkout: self
 
-  - task: DockerInstaller@0
+  # - task: DockerInstaller@0
 
-  - task: aws-actions/configure-aws-credentials@v1
-    inputs:
-      role-to-assume: arn:aws:iam::34545343435:role/AzureDevOpsEcsToggleRole
-      aws-region: ${{ parameters.region }}
+  # - task: aws-actions/configure-aws-credentials@v1
+  #   inputs:
+  #     role-to-assume: arn:aws:iam::34545343435:role/AzureDevOpsEcsToggleRole
+  #     aws-region: ${{ parameters.region }}
 
   - script: |
       docker build -t ecs-toggle ./docker

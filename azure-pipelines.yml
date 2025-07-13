@@ -1,5 +1,5 @@
-trigger:
-- main
+# trigger:
+# - main
 
 pool:
   name: test
@@ -9,32 +9,40 @@ variables:
   dockerImageTag: latest
   fullImageName: $(dockerImageName):$(dockerImageTag)
 
-jobs:
-- job: DockerDiagnostics
-  displayName: "Docker Diagnostics"
+trigger: none
 
-  steps:
-  - script: docker info
-    displayName: 'Docker info'
+parameters:
+  - name: stack_names
+    type: string
+    default: "prod-minivan-api-new-app-ecs-service"
+  - name: active
+    type: string
+    default: "true"
+  - name: region
+    type: string
+    default: "us-east-1"
 
-  - script: docker system df
-    displayName: 'Disk usage'
+steps:
+  - checkout: self
 
-  - script: docker images --format "{{.Repository}}:{{.Tag}} {{.Size}}" | sort -k2 -h
-    displayName: 'Sort by size'
+  - task: DockerInstaller@0
 
-- job: BuildImage
-  displayName: "🏗️ Build Docker Image"
-  dependsOn: DockerDiagnostics
-  steps:
-  - script: docker build -t $(fullImageName) .
-    displayName: 'Build Image'
-  # - script: |
-  #     docker build -t $(dockerImageName):$(dockerImageTag) .
-  #   displayName: 'Docker Build'
+  - task: aws-actions/configure-aws-credentials@v1
+    inputs:
+      role-to-assume: arn:aws:iam::<ACCOUNT_ID>:role/AzureDevOpsEcsToggleRole
+      aws-region: ${{ parameters.region }}
 
-# - script: |
-#     echo "$(dockerPassword)" | docker login -u "$(dockerUsername)" --password-stdin
-#     docker push $(dockerImageName):$(dockerImageTag)
-#   displayName: 'Docker Push'
-#   condition: and(succeeded(), eq(variables['dockerPush'], 'true'))
+  - script: |
+      docker build -t ecs-toggle ./docker
+    displayName: 'Build Docker image'
+
+  - script: |
+      docker run --rm \
+        -e AWS_REGION=${{ parameters.region }} \
+        -e STACK_NAMES="${{ parameters.stack_names }}" \
+        -e ACTIVE="${{ parameters.active }}" \
+        -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
+        -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
+        -e AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN \
+        ecs-toggle
+    displayName: 'Run ECS Toggle via Docker'

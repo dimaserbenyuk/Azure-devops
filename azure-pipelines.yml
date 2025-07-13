@@ -4,11 +4,6 @@
 pool:
   name: test
 
-variables:
-  dockerImageName: myapp
-  dockerImageTag: latest
-  fullImageName: $(dockerImageName):$(dockerImageTag)
-
 trigger: none
 
 parameters:
@@ -29,7 +24,7 @@ steps:
 
   - task: aws-actions/configure-aws-credentials@v1
     inputs:
-      role-to-assume: arn:aws:iam::<ACCOUNT_ID>:role/AzureDevOpsEcsToggleRole
+      role-to-assume: arn:aws:iam::34545343435:role/AzureDevOpsEcsToggleRole
       aws-region: ${{ parameters.region }}
 
   - script: |

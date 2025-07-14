@@ -6,7 +6,7 @@ RUN dnf install -y \
     python3 \
     less \
     shadow-utils \
-    && dnf clean all
+    && dnf clean all && rm -rf /var/cache/dnf
 
 ENV STACK_NAMES=""
 ENV ACTIVE=""
@@ -28,11 +28,16 @@ RUN ARCH=$(uname -m) && \
 
 RUN python3 -m ensurepip && \
     pip3 install --upgrade pip && \
-    pip3 install --upgrade setuptools==70.0.0
+    pip3 install --upgrade setuptools==70.0.0 --no-cache-dir
 
 WORKDIR /app
-
 COPY ecs_toggle.sh /app/ecs_toggle.sh
 RUN chmod +x /app/ecs_toggle.sh
 
-ENTRYPOINT ["/bin/bash", "/app/ecs_toggle.sh"]
+RUN useradd -m -s /bin/bash appuser && \
+    chown -R appuser:appuser /app
+
+USER appuser
+
+# ENTRYPOINT ["/bin/bash", "/app/ecs_toggle.sh"]
+CMD [ "sleep", "3600" ]
